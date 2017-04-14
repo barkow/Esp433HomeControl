@@ -63,16 +63,21 @@ class GenericSocketHandler : public RequestHandler {
         mySwitch.switchOn('a' + indexes[0], indexes[1], indexes[2]);
         delay(500);
         genericSocketStatus[indexes[0]][indexes[1]][indexes[2]] = true;
+        server.send(200, "text/html");
       }
-      if(command == "off") {
+      else if(command == "off") {
         mySwitch.switchOff('a' + indexes[0], indexes[1], indexes[2]);
         delay(500);
         genericSocketStatus[indexes[0]][indexes[1]][indexes[2]] = false;
+        server.send(200, "text/html");
       }
-      if(command == "status") {
+      else if(command == "status") {
         Serial.println(genericSocketStatus[indexes[0]][indexes[1]][indexes[2]]);
+        server.send(200, "text/html", genericSocketStatus[indexes[0]][indexes[1]][indexes[2]] ? "1" : "0");
       }
-      server.send(200, "text/html");
+      else {
+        server.send(400, "text/html", "unknown command");
+      }
     }
     else {
       server.send(400, "text/html");
@@ -102,8 +107,11 @@ void setup(void){
   mySwitch.enableTransmit(2);
   delay(1000);
 
+  //SoftAP deaktivieren
+  WiFi.mode(WIFI_STA);
   //Mit Wifi verbinden
   WiFi.begin(ssid, password);
+  WiFi.softAPdisconnect(true);
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
